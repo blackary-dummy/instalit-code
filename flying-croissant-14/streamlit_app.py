@@ -91,7 +91,7 @@ if st.button("Deploy"):
         dependency_list,
     )
     https_url = (
-        ssh_url.replace("git@", "https://").replace(".git", "").replace(":", "/")
+        ssh_url.replace("git@", "https://").replace(".git", "").replace("github.com:", "github.com/")
     )
 
     app_name = app.name
