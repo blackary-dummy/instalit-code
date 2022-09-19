@@ -96,7 +96,7 @@ if st.button("Deploy"):
 
     app_name = app.name
 
-    deploy(
+    resp = deploy(
         repository=https_url,
         branch="main",
         main_module=str(Path(app_name) / app_name),
@@ -104,3 +104,9 @@ if st.button("Deploy"):
         secrets=secrets,
         python_version=python_version,
     )
+
+    url = "https://share.streamlit.io" + resp["appUrl"]
+
+    st.write(url)
+
+    st.balloons()
