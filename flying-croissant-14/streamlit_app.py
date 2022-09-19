@@ -94,12 +94,12 @@ if st.button("Deploy"):
         ssh_url.replace("git@", "https://").replace(".git", "").replace("github.com:", "github.com/")
     )
 
-    app_name = app.name
+    app_path = app.name
 
     resp = deploy(
         repository=https_url,
         branch="main",
-        main_module=str(Path(app_name) / app_name),
+        main_module=str(Path(name) / app_path),
         workspace_name="blackary",
         secrets=secrets,
         python_version=python_version,
