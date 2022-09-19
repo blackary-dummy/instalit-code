@@ -1,10 +1,11 @@
 from pathlib import Path
-from platform import python_version
+from typing import cast
 
 import streamlit as st
 from git import Repo
 from streamlit_tags import st_tags
 
+from deploy import deploy
 from push import add_files
 
 st.title("Deploy your app")
@@ -35,35 +36,43 @@ elif dependencies == "Upload requirements.txt":
     else:
         st.stop()
 
+app = st.file_uploader("App", type="py")
+
+if app is None:
+    st.stop()
+
 files_to_include = st.radio(
     "Files to include",
     [
-        # "Only streamlit_app.py",
+        "Only streamlit_app.py",
         # "Entire repository",
-        # "Entire folder (including subfolders)",
+        "Entire folder (including subfolders)",
         "Manually add files",
     ],
 )
 
-if files_to_include == "Only streamlit_app.py":
-    file_list = ["streamlit_app.py"]
-elif files_to_include == "Entire repository":
-    file_list = Repo(".").git.ls_files().splitlines()
+file_list = [str(app.name)]
+
+if files_to_include == "Entire repository":
+    file_list += Repo(".").git.ls_files().splitlines()
 elif files_to_include == "Entire folder (including subfolders)":
-    file_list = [str(p) for p in Path(".").rglob("*")]
+    file_list += [str(p) for p in Path(".").rglob("*")]
 elif files_to_include == "Manually add files":
     to_include = st.file_uploader("Files to include", accept_multiple_files=True)
     if to_include is not None:
-        file_list = [str(Path(file.name).absolute()) for file in to_include]
+        file_list += [str(Path(file.name).absolute()) for file in to_include]
 
-python_version_ = st.radio(
-    "Python version",
-    [
-        "3.10",
-        "3.9",
-        "3.8",
-        "3.7",
-    ],
+python_version_ = cast(
+    str,
+    st.radio(
+        "Python version",
+        [
+            "3.10",
+            "3.9",
+            "3.8",
+            "3.7",
+        ],
+    ),
 )
 
 python_version = python_version_.replace(".", "")
@@ -76,8 +85,18 @@ else:
     secrets = ""
 
 if st.button("Deploy"):
-    add_files(
+    url = add_files(
         name,
         file_list,
         dependency_list,
+    )
+    app_name = app.name
+
+    deploy(
+        repository=url,
+        branch="main",
+        main_module=str(Path(app_name) / app_name),
+        workspace_name="blackary",
+        secrets=secrets,
+        python_version=python_version,
     )
