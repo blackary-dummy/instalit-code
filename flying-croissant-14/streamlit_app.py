@@ -85,15 +85,17 @@ else:
     secrets = ""
 
 if st.button("Deploy"):
-    url = add_files(
+    ssh_url = add_files(
         name,
         file_list,
         dependency_list,
     )
+    https_url = ssh_url.replace("git@", "https://").replace(".git", "")
+
     app_name = app.name
 
     deploy(
-        repository=url,
+        repository=https_url,
         branch="main",
         main_module=str(Path(app_name) / app_name),
         workspace_name="blackary",
